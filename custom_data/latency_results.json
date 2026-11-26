@@ -1,0 +1,66 @@
+[
+  {
+    "model": "lsnet_t",
+    "params_m": 11.026,
+    "batch_size": 1,
+    "latency_ms": 165.873,
+    "images_per_sec": 6.03,
+    "device": "cpu"
+  },
+  {
+    "model": "lsnet_t",
+    "params_m": 11.026,
+    "batch_size": 8,
+    "latency_ms": 357.591,
+    "images_per_sec": 22.37,
+    "device": "cpu"
+  },
+  {
+    "model": "focusshift_t",
+    "params_m": 11.109,
+    "batch_size": 1,
+    "latency_ms": 173.286,
+    "images_per_sec": 5.77,
+    "device": "cpu"
+  },
+  {
+    "model": "focusshift_t",
+    "params_m": 11.109,
+    "batch_size": 8,
+    "latency_ms": 670.392,
+    "images_per_sec": 11.93,
+    "device": "cpu"
+  },
+  {
+    "model": "lsnet_micro",
+    "params_m": 3.666,
+    "batch_size": 1,
+    "latency_ms": 79.977,
+    "images_per_sec": 12.5,
+    "device": "cpu"
+  },
+  {
+    "model": "lsnet_micro",
+    "params_m": 3.666,
+    "batch_size": 8,
+    "latency_ms": 234.039,
+    "images_per_sec": 34.18,
+    "device": "cpu"
+  },
+  {
+    "model": "focusshift_micro",
+    "params_m": 3.692,
+    "batch_size": 1,
+    "latency_ms": 402.804,
+    "images_per_sec": 2.48,
+    "device": "cpu"
+  },
+  {
+    "model": "focusshift_micro",
+    "params_m": 3.692,
+    "batch_size": 8,
+    "latency_ms": 155.129,
+    "images_per_sec": 51.57,
+    "device": "cpu"
+  }
+]

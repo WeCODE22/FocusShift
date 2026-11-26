@@ -1,0 +1,82 @@
+{
+  "label_file": "D:\\Projects\\Repo\\focusshift\\custom_data\\cdt_labels.xlsx",
+  "image_root": "D:\\Projects\\Repo\\Masters_Project\\concetto_CDT",
+  "header": [
+    "image_name",
+    "class_id",
+    "class_name",
+    "image_path",
+    "split"
+  ],
+  "n_images_in_excel": 3108,
+  "files_exist": 3108,
+  "files_missing": 0,
+  "classes": [
+    0,
+    4,
+    5
+  ],
+  "class_counts": {
+    "0": 438,
+    "4": 1047,
+    "5": 1623
+  },
+  "class_pct": {
+    "0": 14.09,
+    "4": 33.69,
+    "5": 52.22
+  },
+  "split_counts": {
+    "val": 622,
+    "train": 2486
+  },
+  "class_x_split": {
+    "0_train": 350,
+    "0_val": 88,
+    "4_train": 838,
+    "4_val": 209,
+    "5_train": 1298,
+    "5_val": 325
+  },
+  "disk_folder_counts": {
+    "0": 438,
+    "4": 1047,
+    "5": 1623
+  },
+  "image_sample_n": 120,
+  "width": {
+    "min": 164.0,
+    "max": 645.0,
+    "mean": 322.40833333333336,
+    "median": 322.5,
+    "p25": 279.75,
+    "p75": 354.5
+  },
+  "height": {
+    "min": 163.0,
+    "max": 572.0,
+    "mean": 317.125,
+    "median": 318.0,
+    "p25": 273.75,
+    "p75": 360.5
+  },
+  "aspect_ratio": {
+    "min": 0.8256130790190735,
+    "max": 1.3093922651933703,
+    "mean": 1.0209832728767767,
+    "median": 1.0164527005122221,
+    "p25": 0.9547323266266224,
+    "p75": 1.0711535133264105
+  },
+  "modes": {
+    "RGB": 120
+  },
+  "extensions": {
+    ".png": 120
+  },
+  "notes": [
+    "Clinical Clock Drawing Test (CDT) sketches",
+    "Sparse line drawings (circle, digits, hands) on mostly blank background",
+    "3-way classification using class ids present in Excel"
+  ]
+}

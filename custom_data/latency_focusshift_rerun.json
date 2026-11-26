@@ -1,0 +1,34 @@
+[
+  {
+    "model": "focusshift_t",
+    "params_m": 11.109,
+    "batch_size": 1,
+    "latency_ms": 696.499,
+    "images_per_sec": 1.44,
+    "device": "cpu"
+  },
+  {
+    "model": "focusshift_t",
+    "params_m": 11.109,
+    "batch_size": 8,
+    "latency_ms": 1578.873,
+    "images_per_sec": 5.07,
+    "device": "cpu"
+  },
+  {
+    "model": "focusshift_micro",
+    "params_m": 3.692,
+    "batch_size": 1,
+    "latency_ms": 555.885,
+    "images_per_sec": 1.8,
+    "device": "cpu"
+  },
+  {
+    "model": "focusshift_micro",
+    "params_m": 3.692,
+    "batch_size": 8,
+    "latency_ms": 864.037,
+    "images_per_sec": 9.26,
+    "device": "cpu"
+  }
+]

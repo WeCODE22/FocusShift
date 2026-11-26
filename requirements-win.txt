@@ -1,0 +1,13 @@
+# Windows-friendly pins for Python 3.11
+timm==0.5.4
+einops==0.4.1
+fvcore
+easydict
+matplotlib
+numpy>=1.26,<2.3
+yacs
+scikit-image
+pillow
+wandb
+torch
+torchvision
