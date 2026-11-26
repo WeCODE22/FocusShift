@@ -2,16 +2,29 @@
 
 **Adaptive local focus for efficient vision on Clock Drawing Test (CDT) sketches.**
 
-FocusShift builds on LSNet’s “see large, focus small” design and adds a **learned soft focus map** so the expensive dynamic mix is applied where the ink is—not on empty paper.
+FocusShift builds on [LSNet](https://github.com/THU-MIG/lsnet) (“see large, focus small”, Wang et al., CVPR 2025) and adds a **learned soft focus map** so the expensive dynamic mix runs where the ink is—not on empty paper.
 
 | | |
 |---|---|
 | **Author** | Solomon Panganai Mupona |
 | **Affiliation** | Zhejiang University of Science and Technology |
 | **Task** | 3-class CDT picture classification `{0, 4, 5}` (Shulman-style) |
-| **Prior work** | LSNet — Wang et al., CVPR 2025 (“See Large, Focus Small”) |
+| **Code** | https://github.com/WeCODE22/FocusShift |
+| **Paper** | Overleaf / local TeX package (not in this repo) |
 
-> Paper / Overleaf package is maintained separately (not in this repo).
+---
+
+## Headline results (paper)
+
+| Protocol | Model | Params | Val. acc. |
+|----------|-------|--------|-----------|
+| Matched subset (640 / 160, 6 epochs) | LSNet-T | 11.03M | 39.38% |
+| Matched subset (640 / 160, 6 epochs) | **FocusShift-T** | 11.11M | **45.62%** (+6.2 pp) |
+| Full split | FocusShift-T | 11.11M | **77.65%** (best @ epoch 9) |
+
+Micro models (~3.7M) support fair tiny-size comparisons. Latency is measured with a **batch-1 / batch-8** protocol on a named CPU device (`bench_latency.py`).
+
+> These models are research artifacts for image classification—**not** diagnostic devices.
 
 ---
 
@@ -23,11 +36,14 @@ CDT pages are **sparse**: most pixels are blank paper; score-relevant evidence i
 y = f \odot d + (1-f) \odot s + x
 \]
 
-- \(d\) — dynamic LS path (LKP + SKA)  
-- \(s\) — cheap static depthwise \(3\times3\)  
-- \(x\) — residual  
+| Symbol | Meaning |
+|--------|---------|
+| \(d\) | Dynamic LS path (LKP + SKA) |
+| \(s\) | Cheap static depthwise \(3\times3\) |
+| \(x\) | Residual |
+| \(f\) | Soft spatial focus map in \([0,1]\) |
 
-Also included: **Micro** models (~3.7M) for fair tiny-size comparisons, and a **batch-1 / batch-8 latency** protocol on a named device.
+Core implementation: [`model/focusshift.py`](model/focusshift.py) (`FocusShiftConv`).
 
 ---
 
@@ -40,22 +56,23 @@ Also included: **Micro** models (~3.7M) for fair tiny-size comparisons, and a **
 | `lsnet_micro` | No | 3.67M | Fair small baseline |
 | `focusshift_micro` | Yes | 3.69M | Focus + fair size |
 
-Core implementation: [`model/focusshift.py`](model/focusshift.py) (`FocusShiftConv`).
-
 ---
 
 ## Repository layout
 
 ```
-focusshift/
+FocusShift/
 ├── main.py                 # Train / evaluate
 ├── bench_latency.py        # Batch-1 / batch-8 latency
 ├── prepare_cdt_excel.py    # Build labels from image folders
 ├── transfer_utils.py       # ImageNet weight transfer helpers
+├── requirements.txt
+├── requirements-win.txt    # Windows-friendly pins
 ├── model/
 │   ├── focusshift.py       # FocusShiftConv + T / Micro constructors
 │   ├── lsnet.py            # LSNet blocks
-│   └── ska.py              # Small-kernel aggregation
+│   ├── ska.py              # Small-kernel aggregation (Triton optional)
+│   └── build.py            # timm registration
 ├── custom_data/
 │   └── cdt_labels.xlsx     # Labels + train/val split (portable paths)
 ├── concetto_CDT/           # Local images only (gitignored)
@@ -67,35 +84,33 @@ focusshift/
 
 ## Setup
 
-**Requirements:** Python 3.10+ (3.11 recommended on Windows), PyTorch.
+**Requirements:** Python 3.10+ (3.11 recommended on Windows), PyTorch, `timm`.
 
 ```bash
 git clone https://github.com/WeCODE22/FocusShift.git
 cd FocusShift
 
 python -m venv .venv
-# Windows:
-.venv\Scripts\activate
-# Linux/macOS:
+# Windows PowerShell:
+.\.venv\Scripts\Activate.ps1
+# Linux / macOS:
 # source .venv/bin/activate
 
-pip install -r requirements-win.txt
-# or: pip install -r requirements.txt
+pip install -U pip
+pip install -r requirements-win.txt   # Windows
+# pip install -r requirements.txt     # Linux / macOS
 ```
 
-### Dataset (not shipped in this repo)
+**Windows notes:** `model/ska.py` falls back to a PyTorch path when Triton is unavailable. Training and latency in the paper protocols are CPU-friendly; install a CUDA PyTorch build yourself if you want GPU.
 
-1. Place CDT PNGs under:
-   - `concetto_CDT/0/`
-   - `concetto_CDT/4/`
-   - `concetto_CDT/5/`
-2. Build the Excel split:
+### Dataset (not shipped)
+
+1. Place CDT PNGs under `concetto_CDT/0/`, `concetto_CDT/4/`, `concetto_CDT/5/`.
+2. Build the Excel split (writes **repo-relative** paths):
 
 ```bash
 python prepare_cdt_excel.py
 ```
-
-This writes `custom_data/cdt_labels.xlsx` with **repo-relative** paths.
 
 ### Pretrained weights (optional)
 
@@ -108,6 +123,8 @@ pretrain/lsnet_t.pth
 ---
 
 ## Training
+
+Training always reports validation accuracy each epoch and saves `{model}_best.pth` under `--out-dir`.
 
 ### Full-split FocusShift-T (sketch-aware aug)
 
@@ -126,18 +143,38 @@ python -u main.py \
 
 `--aug sketch` uses mild crop + small affine and **does not flip** (clock digit order / hands are orientation-sensitive).
 
-### Matched subset (fair head-to-head)
+Paper headline **77.65%** used a related full-split schedule with early stopping (best at epoch 9); keep `--patience` enabled if you want that behaviour.
 
-Use a stratified subset and the shorter schedule described in the paper; compare `lsnet_t` vs `focusshift_t` with shared ImageNet init, and Micro models from scratch.
+### Matched subset (fair T head-to-head)
+
+Stratified **640 train / 160 val**, short schedule (6 epochs), shared ImageNet init for T models; Micro from scratch. Use `--aug default` for the photo-style matched protocol described in the paper, and compare:
+
+```bash
+python -u main.py \
+  --models lsnet_t focusshift_t \
+  --epochs 6 \
+  --batch-size 8 \
+  --lr 8e-5 \
+  --pretrained \
+  --label-smoothing 0.1 \
+  --patience 0 \
+  --aug default \
+  --out-dir custom_data/gap_results_matched_t
+```
+
+(Use your stratified subset labels file via `--labels` if it is not the full `cdt_labels.xlsx`.)
 
 ### Useful flags
 
 | Flag | Meaning |
 |------|---------|
 | `--models` | One or more of `lsnet_t`, `focusshift_t`, `lsnet_micro`, `focusshift_micro` |
-| `--aug sketch\|default` | Sketch-aware vs photo-style augmentation |
+| `--aug sketch\|default` | Sketch-aware (no flip) vs photo-style augmentation |
 | `--patience N` | Early stopping; `0` disables |
 | `--pretrained` | Load ImageNet LSNet-T-compatible weights (T models) |
+| `--class-weight` | Inverse-frequency class weights |
+| `--labels` | Path to labels Excel (default: `custom_data/cdt_labels.xlsx`) |
+| `--out-dir` | Checkpoints + `summary.json` |
 
 ---
 
@@ -174,12 +211,13 @@ Expected: `OK (1, 3)`
 | `pretrain/` | Large weight files |
 | `.venv/` | Virtual environment |
 | `custom_data/gap_results*/` | Training runs & checkpoints |
+| `*.pth` | Model weights |
 
 ---
 
 ## Citation / stance
 
-This codebase implements **FocusShift** as an improvement over fixed-focus LS convolution for sparse CDT classification. Models are research artifacts for image classification—they are **not** diagnostic devices for Alzheimer’s disease.
+This codebase implements **FocusShift** as an improvement over fixed-focus LS convolution for sparse CDT classification. Please also cite LSNet (Wang et al., CVPR 2025) when comparing against the baseline.
 
 ---
 
